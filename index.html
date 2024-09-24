@@ -26,6 +26,15 @@
             padding: 10px 15px;
             margin-top: 10px;
         }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #33333300;
+            color: #000000;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
     </style>
 </head>
 <body>
@@ -97,15 +106,15 @@
         }
     }
 
-    function obtenerMatriz(inputsDiv) {
+    function obtenerMatriz(inputsDiv, filas, columnas) {
         const inputs = inputsDiv.getElementsByTagName('input');
         const matriz = [];
         let idx = 0;
 
-        while (idx < inputs.length) {
+        for (let i = 0; i < filas; i++) {
             const fila = [];
-            for (let j = 0; j < inputs.length / 2; j++) {
-                fila.push(parseFloat(inputs[idx].value));
+            for (let j = 0; j < columnas; j++) {
+                fila.push(parseFloat(inputs[idx].value) || 0); // Agregamos 0 si no se ingresa valor
                 idx++;
             }
             matriz.push(fila);
@@ -114,13 +123,19 @@
     }
 
     function realizarOperaciones() {
+        const filasA = parseInt(document.getElementById('filasA').value);
+        const columnasA = parseInt(document.getElementById('columnasA').value);
+        const filasB = parseInt(document.getElementById('filasB').value);
+        const columnasB = parseInt(document.getElementById('columnasB').value);
+        
         const inputsA = document.getElementById('inputsA');
         const inputsB = document.getElementById('inputsB');
         
-        matrizA = obtenerMatriz(inputsA);
-        matrizB = obtenerMatriz(inputsB);
+        matrizA = obtenerMatriz(inputsA, filasA, columnasA);
+        matrizB = obtenerMatriz(inputsB, filasB, columnasB);
 
-        if (matrizA[0].length !== matrizB.length) {
+        // Validamos las dimensiones para la multiplicación
+        if (columnasA !== filasB) {
             document.getElementById('resultados').innerHTML = "Las matrices no son compatibles para la multiplicación.";
             return;
         }
@@ -135,7 +150,7 @@
         const columnasB = b[0].length;
 
         const resultado = Array.from({ length: filasA }, () => Array(columnasB).fill(0));
-        
+
         for (let i = 0; i < filasA; i++) {
             for (let j = 0; j < columnasB; j++) {
                 for (let k = 0; k < columnasA; k++) {
@@ -150,6 +165,8 @@
         return matriz.map(fila => fila.join("\t")).join("<br>");
     }
 </script>
-
+<footer>
+    <p> Mario Alberto Zamudio Pérez Itsur.</p>
+</footer>
 </body>
 </html>
