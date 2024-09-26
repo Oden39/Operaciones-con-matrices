@@ -9,18 +9,19 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             padding: 20px;
-            background-color: #f4f4f4;
+            background-color: #ffffff;
         }
         .container {
             margin-bottom: 20px;
             padding: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
-            background-color: #fff;
+            background-color: #06942588;
         }
         input[type="number"] {
             width: 60px;
             margin: 5px;
+            color: #000000;
         }
         button {
             padding: 10px 15px;
@@ -29,7 +30,7 @@
         footer {
             text-align: center;
             padding: 10px;
-            background-color: #33333300;
+            color: #08e66800;
             color: #000000;
             position: fixed;
             width: 100%;
@@ -59,6 +60,16 @@
     <input type="number" id="columnasB" min="1"><br>
     <button onclick="crearMatrizB()">Crear Matriz B</button>
     <div id="inputsB"></div>
+</div>
+
+<div class="container">
+    <h2>Selecciona la operación</h2>
+    <select id="operacion">
+        <option value="multiplicacion">Multiplicación</option>
+        <option value="suma">Suma</option>
+        <option value="resta">Resta</option>
+        <option value="inversa">Inversa de Matriz A</option>
+    </select>
 </div>
 
 <button onclick="realizarOperaciones()">Realizar Operaciones</button>
@@ -134,14 +145,76 @@
         matrizA = obtenerMatriz(inputsA, filasA, columnasA);
         matrizB = obtenerMatriz(inputsB, filasB, columnasB);
 
-        // Validamos las dimensiones para la multiplicación
-        if (columnasA !== filasB) {
-            document.getElementById('resultados').innerHTML = "Las matrices no son compatibles para la multiplicación.";
-            return;
-        }
+        const operacion = document.getElementById('operacion').value;
 
-        const resultadoMultiplicacion = multiplicarMatrices(matrizA, matrizB);
-        document.getElementById('resultados').innerHTML = "Resultado de la multiplicación:<br>" + imprimirMatriz(resultadoMultiplicacion);
+        let resultado;
+
+        switch (operacion) {
+            case 'multiplicacion':
+                if (columnasA !== filasB) {
+                    document.getElementById('resultados').innerHTML = "Las matrizA debe tener el mismo número de columnas que filas de la matrizB.";
+                    return;
+                }
+                resultado = multiplicarMatrices(matrizA, matrizB);
+                document.getElementById('resultados').innerHTML = "Resultado de la multiplicación:<br>" + imprimirMatriz(resultado);
+                break;
+            case 'suma':
+                if (filasA !== filasB || columnasA !== columnasB) {
+                    document.getElementById('resultados').innerHTML = "Las matrices deben ser cuadradas.";
+                    return;
+                }
+                resultado = sumarMatrices(matrizA, matrizB);
+                document.getElementById('resultados').innerHTML = "Resultado de la suma:<br>" + imprimirMatriz(resultado);
+                break;
+            case 'resta':
+                if (filasA !== filasB || columnasA !== columnasB) {
+                    document.getElementById('resultados').innerHTML = "Las matrices deben ser cuadradas.";
+                    return;
+                }
+                resultado = restarMatrices(matrizA, matrizB);
+                document.getElementById('resultados').innerHTML = "Resultado de la resta:<br>" + imprimirMatriz(resultado);
+                break;
+            case 'inversa':
+                if (filasA !== columnasA) {
+                    document.getElementById('resultados').innerHTML = "La matriz A debe ser cuadrada para calcular su inversa.";
+                    return;
+                }
+                resultado = inversaMatriz(matrizA);
+                if (resultado === null) {
+                    document.getElementById('resultados').innerHTML = "No se puede calcular la inversa de la matriz A.";
+                } else {
+                    document.getElementById('resultados').innerHTML = "Inversa de la matriz A:<br>" + imprimirMatriz(resultado);
+                }
+                break;
+            default:
+                document.getElementById('resultados').innerHTML = "Operación no válida.";
+        }
+    }
+
+    function sumarMatrices(a, b) {
+        const filas = a.length;
+        const columnas = a[0].length;
+        const resultado = Array.from({ length: filas }, () => Array(columnas).fill(0));
+
+        for (let i = 0; i < filas; i++) {
+            for (let j = 0; j < columnas; j++) {
+                resultado[i][j] = a[i][j] + b[i][j];
+            }
+        }
+        return resultado;
+    }
+
+    function restarMatrices(a, b) {
+        const filas = a.length;
+        const columnas = a[0].length;
+        const resultado = Array.from({ length: filas }, () => Array(columnas).fill(0));
+
+        for (let i = 0; i < filas; i++) {
+            for (let j = 0; j < columnas; j++) {
+                resultado[i][j] = a[i][j] - b[i][j];
+            }
+        }
+        return resultado;
     }
 
     function multiplicarMatrices(a, b) {
@@ -161,12 +234,39 @@
         return resultado;
     }
 
+    function inversaMatriz(a) {
+        const n = a.length;
+        const identidad = Array.from({ length: n }, (_, i) =>
+            Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))
+        );
+        const copia = a.map(arr => [...arr]);
+
+        for (let i = 0; i < n; i++) {
+            let factor = copia[i][i];
+            if (factor === 0) return null;
+            for (let j = 0; j < n; j++) {
+                copia[i][j] /= factor;
+                identidad[i][j] /= factor;
+            }
+            for (let k = 0; k < n; k++) {
+                if (k !== i) {
+                    factor = copia[k][i];
+                    for (let j = 0; j < n; j++) {
+                        copia[k][j] -= factor * copia[i][j];
+                        identidad[k][j] -= factor * identidad[i][j];
+                    }
+                }
+            }
+        }
+        return identidad;
+    }
+
     function imprimirMatriz(matriz) {
         return matriz.map(fila => fila.join("\t")).join("<br>");
     }
 </script>
 <footer>
-    <p> Mario Alberto Zamudio Pérez Itsur.</p>
+    <p>Mario Alberto Zamudio Pérez Itsur.</p>
 </footer>
 </body>
 </html>
