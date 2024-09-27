@@ -9,14 +9,14 @@
             font-family: Arial, sans-serif;
             margin: 20px;
             padding: 20px;
-            background-color: #ffffff;
+            background-color: #c5c5c5;
         }
         .container {
             margin-bottom: 20px;
             padding: 15px;
-            border: 1px solid #ccc;
+            border: 5px solid #000000;
             border-radius: 5px;
-            background-color: #06942588;
+            background-color: #ffffffcf;
         }
         input[type="number"] {
             width: 60px;
@@ -35,6 +35,7 @@
             position: fixed;
             width: 100%;
             bottom: 0;
+            
         }
     </style>
 </head>
@@ -75,7 +76,9 @@
 <button onclick="realizarOperaciones()">Realizar Operaciones</button>
 
 <h2>Resultados</h2>
-<div id="resultados"></div>
+<div id="resultados">
+    
+</div>
 
 <script>
     let matrizA = [];
@@ -117,6 +120,7 @@
         }
     }
 
+
     function obtenerMatriz(inputsDiv, filas, columnas) {
         const inputs = inputsDiv.getElementsByTagName('input');
         const matriz = [];
@@ -125,7 +129,7 @@
         for (let i = 0; i < filas; i++) {
             const fila = [];
             for (let j = 0; j < columnas; j++) {
-                fila.push(parseFloat(inputs[idx].value) || 0); // Agregamos 0 si no se ingresa valor
+                fila.push(parseFloat(inputs[idx].value) || 0); 
                 idx++;
             }
             matriz.push(fila);
@@ -147,7 +151,7 @@
 
         const operacion = document.getElementById('operacion').value;
 
-        let resultado;
+        let r
 
         switch (operacion) {
             case 'multiplicacion':
@@ -216,7 +220,7 @@
         }
         return resultado;
     }
-
+ 
     function multiplicarMatrices(a, b) {
         const filasA = a.length;
         const columnasA = a[0].length;
