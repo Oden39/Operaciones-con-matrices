@@ -30,18 +30,27 @@
         footer {
             text-align: center;
             padding: 10px;
-            color: #08e66800;
             color: #000000;
             position: fixed;
             width: 100%;
             bottom: 0;
-            
+        }
+        .instructions {
+            background-color: #d9c913;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #000;
         }
     </style>
 </head>
 <body>
 
 <h1>Operaciones con Matrices</h1>
+
+<div class="instructions">
+    <strong>Instrucciones:</strong> Las operaciones de <em>Gauss-Jordan</em>, <em>Inversa</em>, <em>Determinante</em> y <em>Regla de Cramer</em> sólo requieren la <strong>Matriz A</strong>. Para la multiplicación, suma o resta, necesitas ambas matrices.
+</div>
 
 <div class="container">
     <h2>Matriz A</h2>
@@ -70,15 +79,16 @@
         <option value="suma">Suma</option>
         <option value="resta">Resta</option>
         <option value="inversa">Inversa de Matriz A</option>
+        <option value="determinante">Determinante de Matriz A</option>
+        <option value="gaussJordan">Gauss-Jordan (Matriz A)</option>
+        <option value="cramer">Regla de Cramer (Matriz A)</option>
     </select>
 </div>
 
 <button onclick="realizarOperaciones()">Realizar Operaciones</button>
 
 <h2>Resultados</h2>
-<div id="resultados">
-    
-</div>
+<div id="resultados"></div>
 
 <script>
     let matrizA = [];
@@ -120,7 +130,6 @@
         }
     }
 
-
     function obtenerMatriz(inputsDiv, filas, columnas) {
         const inputs = inputsDiv.getElementsByTagName('input');
         const matriz = [];
@@ -150,13 +159,12 @@
         matrizB = obtenerMatriz(inputsB, filasB, columnasB);
 
         const operacion = document.getElementById('operacion').value;
-
-        let r
+        let resultado;
 
         switch (operacion) {
             case 'multiplicacion':
                 if (columnasA !== filasB) {
-                    document.getElementById('resultados').innerHTML = "Las matrizA debe tener el mismo número de columnas que filas de la matrizB.";
+                    document.getElementById('resultados').innerHTML = "La matriz A debe tener el mismo número de columnas que filas de la matriz B.";
                     return;
                 }
                 resultado = multiplicarMatrices(matrizA, matrizB);
@@ -164,7 +172,7 @@
                 break;
             case 'suma':
                 if (filasA !== filasB || columnasA !== columnasB) {
-                    document.getElementById('resultados').innerHTML = "Las matrices deben ser cuadradas.";
+                    document.getElementById('resultados').innerHTML = "Las matrices deben tener las mismas dimensiones.";
                     return;
                 }
                 resultado = sumarMatrices(matrizA, matrizB);
@@ -172,7 +180,7 @@
                 break;
             case 'resta':
                 if (filasA !== filasB || columnasA !== columnasB) {
-                    document.getElementById('resultados').innerHTML = "Las matrices deben ser cuadradas.";
+                    document.getElementById('resultados').innerHTML = "Las matrices deben tener las mismas dimensiones.";
                     return;
                 }
                 resultado = restarMatrices(matrizA, matrizB);
@@ -189,6 +197,26 @@
                 } else {
                     document.getElementById('resultados').innerHTML = "Inversa de la matriz A:<br>" + imprimirMatriz(resultado);
                 }
+                break;
+            case 'determinante':
+                if (filasA !== columnasA) {
+                    document.getElementById('resultados').innerHTML = "La matriz A debe ser cuadrada para calcular su determinante.";
+                    return;
+                }
+                resultado = calcularDeterminante(matrizA);
+                document.getElementById('resultados').innerHTML = `Determinante de la matriz A: ${resultado}`;
+                break;
+            case 'gaussJordan':
+                resultado = gaussJordan(matrizA);
+                document.getElementById('resultados').innerHTML = "Matriz reducida por Gauss-Jordan:<br>" + imprimirMatriz(resultado);
+                break;
+            case 'cramer':
+                if (filasA !== columnasA || filasA !== matrizB.length) {
+                    document.getElementById('resultados').innerHTML = "Para usar Cramer, la matriz A debe ser cuadrada y el vector B compatible.";
+                    return;
+                }
+                resultado = resolverCramer(matrizA, matrizB.flat());
+                document.getElementById('resultados').innerHTML = "Soluciones del sistema por Cramer:<br>" + resultado.join(", ");
                 break;
             default:
                 document.getElementById('resultados').innerHTML = "Operación no válida.";
@@ -220,7 +248,7 @@
         }
         return resultado;
     }
- 
+
     function multiplicarMatrices(a, b) {
         const filasA = a.length;
         const columnasA = a[0].length;
@@ -265,12 +293,89 @@
         return identidad;
     }
 
+    function calcularDeterminante(matriz) {
+        const n = matriz.length;
+        if (n === 1) return matriz[0][0];
+
+        let det = 0;
+        for (let i = 0; i < n; i++) {
+            det += (i % 2 === 0 ? 1 : -1) * matriz[0][i] * calcularDeterminante(obtenerMenor(matriz, 0, i));
+        }
+        return det;
+    }
+
+    function obtenerMenor(matriz, fila, columna) {
+        return matriz.slice(0, fila).concat(matriz.slice(fila + 1)).map(f => f.filter((_, i) => i !== columna));
+    }
+
+    function gaussJordan(matriz) {
+        const n = matriz.length;
+        const copia = matriz.map(arr => [...arr]);
+    
+        for (let i = 0; i < n; i++) {
+            // Ensure the pivot element is not zero
+            if (copia[i][i] === 0) {
+                let swapped = false;
+                for (let k = i + 1; k < n; k++) {
+                    if (copia[k][i] !== 0) {
+                        [copia[i], copia[k]] = [copia[k], copia[i]];
+                        swapped = true;
+                        break;
+                    }
+                }
+                if (!swapped) return null; // No non-zero pivot found
+            }
+    
+            // Normalize the pivot row
+            let factor = copia[i][i];
+            for (let j = 0; j < n; j++) {
+                copia[i][j] /= factor;
+            }
+    
+            // Eliminate the current column in all other rows
+            for (let k = 0; k < n; k++) {
+                if (k !== i) {
+                    factor = copia[k][i];
+                    for (let j = 0; j < n; j++) {
+                        copia[k][j] -= factor * copia[i][j];
+                    }
+                }
+            }
+        }
+    
+        // Ensure that the pivot element in the current column is 1 and all other elements in that column are 0
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (i !== j && copia[j][i] !== 0) {
+                    let factor = copia[j][i];
+                    for (let k = 0; k < n; k++) {
+                        copia[j][k] -= factor * copia[i][k];
+                    }
+                }
+            }
+        }
+    
+        return copia;
+    }
+
+    function resolverCramer(matriz, vector) {
+        const det = calcularDeterminante(matriz);
+        if (det === 0) return null;
+
+        return matriz[0].map((_, i) => calcularDeterminante(reemplazarColumna(matriz, vector, i)) / det);
+    }
+
+    function reemplazarColumna(matriz, columna, index) {
+        return matriz.map((fila, i) => fila.map((val, j) => (j === index ? columna[i] : val)));
+    }
+
     function imprimirMatriz(matriz) {
         return matriz.map(fila => fila.join("\t")).join("<br>");
     }
 </script>
+
 <footer>
-    <p>Mario Pérez, Rafael Martinez Itsur.</p>
+    <p>Mario Alberto Zamudio Pérez. Itsur.</p>
 </footer>
 </body>
 </html>
